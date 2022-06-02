@@ -3,7 +3,7 @@ const http = require("http");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-const { todoTable } = require("./database/table");
+const { todoTable, todoDetailTable } = require("./database/table");
 const routes = require("./routes");
 
 const app = express();
@@ -11,6 +11,7 @@ const PORT = 4500;
 const server = http.createServer(app);
 
 todoTable(); // execute some table
+todoDetailTable();
 
 app.use(cors());
 app.use(bodyParser.json());

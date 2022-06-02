@@ -4,7 +4,7 @@ const { randomBytes } = require("crypto");
 module.exports = {
   created: (req, res) => {
     connDB.getConnection(async (err, conn) => {
-      const { todoName } = req.body;
+      const { todoName, todoDescription } = req.body;
 
       if (err) throw err;
 
@@ -17,9 +17,18 @@ module.exports = {
         `);
 
         if (createTodo) {
-          return res.status(200).json("Created successfully!");
+          const idDetail = randomBytes(8).toString("hex");
+          const [insertTodoDetail] = await conn.promise().query(`
+            INSERT INTO todos_detail (id, todoDescription, todoId)
+            VALUES ('${idDetail}', '${todoDescription}', '${id}')
+          `);
+
+          if (insertTodoDetail) {
+            return res.status(200).json("Created successfully!");
+          }
         }
       } catch (error) {
+        console.log(error);
         return res.status(400).json("Something went wrong!");
       }
     });
@@ -30,7 +39,11 @@ module.exports = {
 
       try {
         const [getTodos] = await conn.promise().query(`
-          SELECT * FROM todos;
+          SELECT 
+            t.id, t.todoName,
+            td.id as todoDetailId, td.todoDescription
+          FROM todos t
+          LEFT JOIN todos_detail td ON t.id = td.todoId;
         `);
 
         if (getTodos) {
